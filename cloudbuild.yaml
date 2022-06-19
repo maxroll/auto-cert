@@ -1,0 +1,7 @@
+steps:
+- name: 'gcr.io/cloud-builders/docker'
+  args: ['build', '-t', 'europe-west4-docker.pkg.dev/$PROJECT_ID/maxroll-public/auto-cert:$SHORT_SHA', '.']
+- name: 'gcr.io/cloud-builders/docker'
+  args: ['tag','europe-west4-docker.pkg.dev/$PROJECT_ID/maxroll-public/auto-cert:$SHORT_SHA', 'europe-west4-docker.pkg.dev/$PROJECT_ID/maxroll-public/auto-cert:latest']
+- name: 'gcr.io/cloud-builders/docker'
+  args: ['push', '--all-tags', 'europe-west4-docker.pkg.dev/$PROJECT_ID/maxroll-public/auto-cert']
