@@ -11,6 +11,7 @@ import (
 	"github.com/go-acme/lego/v4/certcrypto"
 	"github.com/go-acme/lego/v4/certificate"
 	"github.com/go-acme/lego/v4/challenge"
+	"github.com/go-acme/lego/v4/challenge/dns01"
 	"github.com/go-acme/lego/v4/lego"
 	"github.com/go-acme/lego/v4/registration"
 )
@@ -82,7 +83,12 @@ func NewRequestor(user *AcmeUser, provider challenge.Provider, solverConfig inte
 	}
 
 	if method == DNS {
-		err = client.Challenge.SetDNS01Provider(provider)
+		err = client.Challenge.SetDNS01Provider(provider,
+			dns01.AddRecursiveNameservers(dns01.ParseNameservers([]string{
+				"1.1.1.1:53",
+				"1.0.0.1:53",
+			})),
+		)
 		if err != nil {
 			return nil, err
 		}

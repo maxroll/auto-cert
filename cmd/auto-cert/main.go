@@ -28,7 +28,7 @@ func main() {
 	providerName := env.GetOrDefaultString("AUTOCERT_PROVIDER", "cloudflare")
 	hostnamesEnv := env.GetOrDefaultString("AUTOCERT_HOSTNAMES", "")
 	forceRenew := env.GetOrDefaultBool("AUTOCERT_FORCE_RENEW", false)
-	runnerName := env.GetOrDefaultString("AUTOCERT_RUNNER", "")
+	runnersEnv := env.GetOrDefaultString("AUTOCERT_RUNNERS", "")
 
 	if secretBackendName == "" {
 		log.Fatalf("env var AUTOCERT_SECRET_BACKEND not set")
@@ -42,8 +42,8 @@ func main() {
 		log.Fatalf("env var AUTOCERT_HOSTNAMES not set")
 	}
 
-	if runnerName == "" {
-		log.Fatalf("env var AUTOCERT_RUNNER not set")
+	if runnersEnv == "" {
+		log.Fatalf("env var AUTOCERT_RUNNERS not set")
 	}
 
 	var secretBackend secrets.SecretBackend
@@ -51,8 +51,16 @@ func main() {
 	var user *requestor.AcmeUser
 
 	hostnames := strings.Split(hostnamesEnv, ",")
+	runners := strings.Split(runnersEnv, ",")
 
 	log.Printf("Hostnames set: %s", hostnames)
+	log.Printf("Runners set: %s", runners)
+
+	runnerManager, err := runner.NewRunnerManager(runners)
+
+	if err != nil {
+		log.Fatalf("Error loading runners: %s", err.Error())
+	}
 
 	if secretBackendName == "secretmanager" {
 		config := &secrets.SecretManagerConfig{
@@ -154,7 +162,7 @@ func main() {
 				})
 
 				log.Println("Certificate renewed successfully")
-				ExecRunner(runnerName, hostnames, certificate)
+				runnerManager.Run(hostnames, certificate)
 			}
 		}
 
@@ -180,22 +188,7 @@ func main() {
 
 		log.Printf("Done requesting cerficate for %s", hostnames)
 
-		ExecRunner(runnerName, hostnames, certificate)
-	}
-
-}
-
-func ExecRunner(runnerName string, hostnames []string, certificate *requestor.Certificate) {
-
-	if runnerName == "bunnycdn" {
-		runner := runner.NewBunnyCDNRunner()
-		err := runner.Exec(hostnames, certificate)
-
-		if err != nil {
-			log.Fatalf("Runner failed: %s", err.Error())
-		}
-	} else {
-		log.Fatalf("Invalid runner: %s", runnerName)
+		runnerManager.Run(hostnames, certificate)
 	}
 
 }

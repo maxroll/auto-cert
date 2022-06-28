@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"log"
+	"sync"
 
 	"github.com/go-acme/lego/v4/platform/config/env"
 	"github.com/maxroll/auto-cert/pkg/requestor"
@@ -19,6 +20,7 @@ type BunnyCDNRunner struct {
 	config *Config
 	*bunny.Client
 	context.Context
+	*sync.WaitGroup
 }
 
 func NewBunnyCDNRunner() *BunnyCDNRunner {
@@ -29,14 +31,18 @@ func NewBunnyCDNRunner() *BunnyCDNRunner {
 
 	client := bunny.NewClient(config.ApiKey)
 
-	return &BunnyCDNRunner{config, client, context.Background()}
+	return &BunnyCDNRunner{config, client, context.Background(), nil}
 }
 
-func (r *BunnyCDNRunner) Exec(hostnames []string, certificate *requestor.Certificate) error {
+func (r *BunnyCDNRunner) Exec(waitGroup *sync.WaitGroup, hostnames []string, certificate *requestor.Certificate) error {
 	log.Printf("[BunnyCDN Runner] Updating certificate in BunnyCDN")
 
 	if certificate == nil {
 		return fmt.Errorf("No certificate available")
+	}
+
+	if waitGroup == nil {
+		return fmt.Errorf("No waitgroup set")
 	}
 
 	// check if the pull zone exists
@@ -74,6 +80,7 @@ func (r *BunnyCDNRunner) Exec(hostnames []string, certificate *requestor.Certifi
 	}
 
 	log.Println("[BunnyCDN Runner] BunnyCDN runner finished!")
+	waitGroup.Done()
 
 	return nil
 
