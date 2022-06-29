@@ -149,6 +149,9 @@ func (s *SecretManagerBackend) UpdateSecret(payload *Secret) *Secret {
 func (s *SecretManagerBackend) Close() {
 	s.client.Close()
 }
+func (s *SecretManagerBackend) Name() string {
+	return "secretmanager"
+}
 
 func NewSecretManagerSecretBackend(ctx context.Context, config *SecretManagerConfig) SecretBackend {
 	client, err := secretmanager.NewClient(ctx)

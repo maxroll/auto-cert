@@ -5,6 +5,7 @@ type SecretBackend interface {
 	CreateSecret(payload *Secret) *Secret
 	UpdateSecret(payload *Secret) *Secret
 	Close()
+	Name() string
 }
 
 type User struct {
