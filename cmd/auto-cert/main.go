@@ -8,7 +8,6 @@ import (
 	"io"
 	"log"
 	"net/http"
-	"os"
 	"strings"
 	"time"
 
@@ -200,7 +199,7 @@ func execute(config *Config) {
 
 				log.Printf("Validaty left: %d days", int(cert.NotAfter.Sub(time.Now()).Hours())/24)
 				log.Printf("Current certicate valid until: %s. No need to renew", cert.NotAfter)
-				os.Exit(0)
+				return
 			} else {
 				log.Println("Renewing certificate")
 
