@@ -2,7 +2,6 @@ package runner
 
 import (
 	"fmt"
-	"log"
 	"time"
 
 	"github.com/go-resty/resty/v2"
@@ -119,8 +118,6 @@ func (s *StackPathAPI) AddCertificates(certificate *requestor.Certificate) error
 	if err != nil {
 		return err
 	}
-
-	log.Printf("Response code: %d", resp.StatusCode())
 
 	if resp.StatusCode() != 200 {
 		return fmt.Errorf(string(resp.Body()))

@@ -3,7 +3,6 @@ package util
 import (
 	"crypto/x509"
 	"encoding/pem"
-	"log"
 	"sort"
 
 	"github.com/go-acme/lego/v4/certcrypto"
@@ -28,7 +27,6 @@ func StringSlicesEqual(a, b []string) bool {
 	sort.Strings(b)
 
 	if len(a) != len(b) {
-		log.Println("len")
 		return false
 	}
 	for i, v := range a {
