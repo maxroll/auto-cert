@@ -11,20 +11,20 @@ import (
 	bunny "github.com/simplesurance/bunny-go"
 )
 
-type Config struct {
+type BunnyConfig struct {
 	PullZoneId int64
 	ApiKey     string
 }
 
 type BunnyCDNRunner struct {
-	config *Config
+	config *BunnyConfig
 	*bunny.Client
 	context.Context
 	*sync.WaitGroup
 }
 
 func NewBunnyCDNRunner() *BunnyCDNRunner {
-	config := &Config{
+	config := &BunnyConfig{
 		PullZoneId: int64(env.GetOrDefaultInt("BUNNYCDN_PULL_ZONE_ID", 0)),
 		ApiKey:     env.GetOrDefaultString("BUNNYCDN_API_KEY", ""),
 	}
@@ -34,15 +34,11 @@ func NewBunnyCDNRunner() *BunnyCDNRunner {
 	return &BunnyCDNRunner{config, client, context.Background(), nil}
 }
 
-func (r *BunnyCDNRunner) Exec(waitGroup *sync.WaitGroup, hostnames []string, certificate *requestor.Certificate) error {
+func (r *BunnyCDNRunner) Exec(hostnames []string, certificate *requestor.Certificate) error {
 	log.Printf("[BunnyCDN Runner] Updating certificate in BunnyCDN")
 
 	if certificate == nil {
 		return fmt.Errorf("No certificate available")
-	}
-
-	if waitGroup == nil {
-		return fmt.Errorf("No waitgroup set")
 	}
 
 	// check if the pull zone exists
@@ -80,7 +76,6 @@ func (r *BunnyCDNRunner) Exec(waitGroup *sync.WaitGroup, hostnames []string, cer
 	}
 
 	log.Println("[BunnyCDN Runner] BunnyCDN runner finished!")
-	waitGroup.Done()
 
 	return nil
 

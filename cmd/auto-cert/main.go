@@ -24,6 +24,7 @@ type Config struct {
 	providerName  string
 	hostnames     []string
 	forceRenew    bool
+	forceRunners  bool
 	runnerManager *runner.RunnerManager
 	secretBackend secrets.SecretBackend
 	secret        *secrets.Secret
@@ -46,6 +47,7 @@ func main() {
 	listenerMode := env.GetOrDefaultBool("AUTOCERT_LISTENER_MODE", false)
 	listenerPort := env.GetOrDefaultInt("AUTOCERT_LISTENER_PORT", 8080)
 	runnersEnv := env.GetOrDefaultString("AUTOCERT_RUNNERS", "")
+	forceRunners := env.GetOrDefaultBool("AUTOCERT_FORCE_RUNNERS", false)
 
 	if secretBackendName == "" {
 		log.Fatalf("env var AUTOCERT_SECRET_BACKEND not set")
@@ -132,6 +134,7 @@ func main() {
 		providerName:  providerName,
 		hostnames:     hostnames,
 		forceRenew:    forceRenew,
+		forceRunners:  forceRunners,
 		runnerManager: runnerManager,
 		secretBackend: secretBackend,
 		secret:        secret,
@@ -197,8 +200,12 @@ func execute(config *Config) {
 
 			if cert.NotAfter.Sub(time.Now()) >= time.Hour*72 && !config.forceRenew {
 
-				log.Printf("Validaty left: %d days", int(cert.NotAfter.Sub(time.Now()).Hours())/24)
+				log.Printf("Validity left: %d days", int(cert.NotAfter.Sub(time.Now()).Hours())/24)
 				log.Printf("Current certicate valid until: %s. No need to renew", cert.NotAfter)
+
+				if config.forceRunners {
+					config.runnerManager.Run(config.hostnames, certificate)
+				}
 				return
 			} else {
 				log.Println("Renewing certificate")

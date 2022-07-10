@@ -5,7 +5,11 @@ go 1.18
 require (
 	cloud.google.com/go v0.54.0
 	github.com/go-acme/lego/v4 v4.7.0
+	github.com/go-resty/resty/v2 v2.7.0
 	github.com/joho/godotenv v1.4.0
+	github.com/simplesurance/bunny-go v0.0.0-20220608083035-3d98cb9a17da
+	golang.org/x/sync v0.0.0-20210220032951-036812b2e83c
+	google.golang.org/genproto v0.0.0-20220617124728-180714bec0ad
 )
 
 require (
@@ -19,7 +23,6 @@ require (
 	github.com/googleapis/gax-go/v2 v2.0.5 // indirect
 	github.com/miekg/dns v1.1.47 // indirect
 	github.com/pkg/errors v0.9.1 // indirect
-	github.com/simplesurance/bunny-go v0.0.0-20220608083035-3d98cb9a17da // indirect
 	go.opencensus.io v0.22.3 // indirect
 	golang.org/x/crypto v0.0.0-20210616213533-5ff15b29337e // indirect
 	golang.org/x/mod v0.4.2 // indirect
@@ -32,7 +35,6 @@ require (
 	golang.org/x/xerrors v0.0.0-20200804184101-5ec99f83aff1 // indirect
 	google.golang.org/api v0.20.0 // indirect
 	google.golang.org/appengine v1.6.5 // indirect
-	google.golang.org/genproto v0.0.0-20220617124728-180714bec0ad // indirect
 	google.golang.org/grpc v1.47.0 // indirect
 	google.golang.org/protobuf v1.28.0 // indirect
 	gopkg.in/square/go-jose.v2 v2.6.0 // indirect

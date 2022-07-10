@@ -1,16 +1,19 @@
 package runner
 
 import (
+	"context"
 	"fmt"
+	"log"
 	"sync"
 
 	"github.com/go-acme/lego/v4/challenge"
 	"github.com/maxroll/auto-cert/pkg/requestor"
 	"github.com/maxroll/auto-cert/pkg/secrets"
+	"golang.org/x/sync/errgroup"
 )
 
 type Runner interface {
-	Exec(waitGroup *sync.WaitGroup, hostnames []string, certificate *requestor.Certificate) error
+	Exec(hostnames []string, certificate *requestor.Certificate) error
 }
 
 type Bootstrap struct {
@@ -32,6 +35,14 @@ func NewRunnerManager(runners []string) (*RunnerManager, error) {
 	for _, runnerName := range runners {
 		if runnerName == "bunnycdn" {
 			runnerInstances = append(runnerInstances, NewBunnyCDNRunner())
+		} else if runnerName == "stackpath" {
+			runner, err := NewStackPathRunner()
+
+			if err != nil {
+				return nil, err
+			}
+
+			runnerInstances = append(runnerInstances, runner)
 		} else {
 			return nil, fmt.Errorf("Unknown runner: %s", runnerName)
 		}
@@ -43,8 +54,20 @@ func NewRunnerManager(runners []string) (*RunnerManager, error) {
 }
 
 func (r *RunnerManager) Run(hostnames []string, certificate *requestor.Certificate) {
+	ctx := context.Background()
+
+	errs, ctx := errgroup.WithContext(ctx)
+
 	for _, runner := range r.Runners {
-		go runner.Exec(r.WaitGroup, hostnames, certificate)
+		execRunner := runner
+		errs.Go(func() error {
+			return execRunner.Exec(hostnames, certificate)
+		})
 	}
-	r.WaitGroup.Wait()
+
+	err := errs.Wait()
+
+	if err != nil {
+		log.Printf("Runner failed: %s", err.Error())
+	}
 }
